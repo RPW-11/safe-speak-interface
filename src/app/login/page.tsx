@@ -17,6 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GoogleButton } from "@/components/auth/google-button";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import Loading from "@/components/loading";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -28,6 +31,9 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
+  const { isLoading, error, loginUser } = useAuth();
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,9 +42,15 @@ export default function LoginPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Add your authentication logic here
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+      try {
+        const user = await loginUser({ email: values.email, password: values.password });
+        // save into user context
+        
+        router.push('/dashboard');
+      } catch (err) {
+        console.error('Login error:', err);
+      }
   }
 
   return (
@@ -81,8 +93,9 @@ export default function LoginPage() {
                     </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full">
-                    Login
+                {error && (<div className="text-sm text-red-500 text-center">{ error }</div>)}
+                <Button disabled={isLoading} type="submit" className="w-full">
+                  { isLoading ? <Loading/> : "Login" }
                 </Button>
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">

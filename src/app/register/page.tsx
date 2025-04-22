@@ -17,6 +17,9 @@ import { Input } from "@/components/ui/input";
 import { GoogleButton } from "@/components/auth/google-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useRouter } from "next/navigation";
+import Loading from "@/components/loading";
 
 const formSchema = z.object({
   username: z.string()
@@ -26,8 +29,8 @@ const formSchema = z.object({
     .max(20, {
       message: "Username must be at most 20 characters.",
     })
-    .regex(/^\S*$/, {
-      message: "Username cannot contain spaces.",
+    .regex(/^[a-zA-Z0-9 ]*$/, {
+      message: "Username can only contain letters, numbers, and spaces.",
     }),
   email: z.string().email({
     message: "Please enter a valid email address.",
@@ -38,6 +41,9 @@ const formSchema = z.object({
 });
 
 export default function RegisterPage() {
+  const { registerUser, isLoading, error } = useAuth()
+  const router = useRouter()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,9 +53,15 @@ export default function RegisterPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    // Add your registration logic here
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const user = await registerUser({ username: values.username, email: values.email, password: values.password });
+      // save into user context
+      
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('Register error:', err);
+    }
   }
 
   return (
@@ -105,8 +117,9 @@ export default function RegisterPage() {
                     </FormItem>
                     )}
                 />
-                <Button type="submit" className="w-full mt-6">
-                    Register
+                {error && (<div className="text-sm text-red-500 text-center">{ error }</div>)}
+                <Button disabled={isLoading} type="submit" className="w-full mt-6">
+                    { isLoading ? <Loading/> : "Register" }
                 </Button>
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
