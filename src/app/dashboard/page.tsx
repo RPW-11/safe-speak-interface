@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
 import { useRouter } from "next/navigation"
+import PromptForm from "@/components/prompt-form/prompt-form"
 
 const DashboardPage = () => {
     const { logoutUser } = useAuth()
@@ -15,8 +16,12 @@ const DashboardPage = () => {
         }
     }
   return (
-    <div>DashboardPage
+    <div className="max-w-6xl m-auto p-4 flex flex-col h-full justify-between">
+        DashboardPage
         <Button variant={"destructive"} onClick={handleLogout}>Logout</Button>
+        <div className="float-0">
+            <PromptForm/>
+        </div>
     </div>
   )
 }
