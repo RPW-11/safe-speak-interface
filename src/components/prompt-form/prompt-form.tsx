@@ -30,7 +30,7 @@ const PromptForm = () => {
         <Textarea
           ref={textareaRef}
           placeholder="Chat to the bad guys"
-          className="border-none shadow-none focus-visible:ring-0 resize-none min-h-[40px]"
+          className="!text-base border-none shadow-none focus-visible:ring-0 resize-none min-h-[40px]"
           value={inputValue}
           onChange={handleInputChange}
           style={{

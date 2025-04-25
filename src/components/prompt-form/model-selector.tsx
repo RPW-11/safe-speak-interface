@@ -1,8 +1,9 @@
 import { Llm } from "@/types/model"
 import { Button } from "../ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
+import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
-import { ChevronDown, ShieldEllipsis } from "lucide-react"
+import { ChevronDown, ScrollText, ShieldEllipsis } from "lucide-react"
 
 
 const ModelSelector = () => {
@@ -35,17 +36,33 @@ const ModelSelector = () => {
                     <Button key={model.id} variant="ghost" className="w-full relative h-fit">
                         <div className="w-full text-start">
                             <h4 className="scroll-m-20 font-semibold tracking-tight">
-                                {model.name}
+                                { model.name }
                             </h4>
                             <p
                                 className="text-sm text-muted-foreground whitespace-normal"
                                 title={model.description}
                             >
-                                {model.description}
+                                { model.description }
                             </p>
                         </div>
                   </Button>
                 ))}
+                <Separator className="my-2"/>
+                <Button variant={"ghost"} className="w-full relative h-fit">
+                    <div className="w-full text-start flex items-center gap-3">
+                        <div className="w-full">
+                            <h4 className="scroll-m-20 font-semibold tracking-tight">
+                                Protection script
+                            </h4>
+                            <p
+                                className="text-sm text-muted-foreground whitespace-normal"
+                            >
+                                Write your protection command
+                            </p>
+                        </div>
+                        <ScrollText className="!size-5"/>
+                    </div>
+                </Button>
             </PopoverContent>
             </Popover>
         </Tooltip>

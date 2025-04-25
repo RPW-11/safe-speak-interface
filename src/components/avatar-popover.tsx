@@ -1,8 +1,22 @@
+import { useAuth } from "@/hooks/useAuth"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Button } from "./ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { LogOut, Settings } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const AvatarPopover = () => {
+  const { logoutUser } = useAuth()
+  const router = useRouter()
+  const handleLogout = async () => {
+      try {
+          await logoutUser()
+          router.push("/login")
+      } catch (error) {
+          console.log(error);
+      }
+  }
+
   return (
     <Popover>
         <PopoverTrigger asChild>
@@ -13,8 +27,13 @@ const AvatarPopover = () => {
             </Avatar>
             </Button>
         </PopoverTrigger>
-        <PopoverContent align="end">
-            Hello
+        <PopoverContent align="end" className="w-40 h-fit p-1">
+          <Button variant={"ghost"} className="w-full justify-start">
+            <Settings/> Settings
+          </Button>
+          <Button variant={"ghost"} className="text-rose-700 w-full justify-start" onClick={handleLogout}>
+            <LogOut/> Logout
+          </Button>
         </PopoverContent>
     </Popover>
   )
