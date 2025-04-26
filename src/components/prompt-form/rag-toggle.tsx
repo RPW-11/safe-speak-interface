@@ -9,12 +9,12 @@ const RagToggle = () => {
     <TooltipProvider>
       <Tooltip delayDuration={300}>
         <TooltipTrigger asChild>
-          <>
+          <div>
             <Toggle aria-label="Toggle rag">
               <BookText />
               Optimize
             </Toggle>
-          </>
+          </div>
         </TooltipTrigger>
         <TooltipContent>
           <p>Optimize with RAG</p>

@@ -10,8 +10,8 @@ import HistoryDialog from './chat-history/history-dialog';
 
 const Header = () => {
   return (
-    <header className="h-16 top-0 z-50 absolute w-full bg-white shadow shadow-white">
-      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+    <header className="h-16 top-0 z-50 absolute w-full bg-white shadow-lg shadow-white">
+      <div className="px-6 py-3 flex items-center justify-between">
         <div className="flex items-center">
             <Link href="/" passHref className='flex gap-1 items-center'>
                 <ShieldCheck className='text-violet-500'/>

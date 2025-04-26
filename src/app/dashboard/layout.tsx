@@ -1,4 +1,5 @@
 import Header from "@/components/header";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 export default function RootLayout({
@@ -7,9 +8,9 @@ export default function RootLayout({
     children: React.ReactNode;
   }>) {
     return (
-      <div className="h-full">
+      <ScrollArea className="h-full overflow-auto">
         <Header/>
         { children }
-      </div>
+      </ScrollArea>
     );
   }

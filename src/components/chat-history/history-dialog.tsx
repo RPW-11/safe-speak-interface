@@ -7,6 +7,7 @@ import { useState } from "react"
 import { Separator } from "../ui/separator"
 import { Badge } from "../ui/badge"
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
+import { ScrollArea } from "../ui/scroll-area"
 
 const HistoryDialog = () => {
     const [isOpen, setIsOpen] = useState<boolean>(false)
@@ -34,7 +35,7 @@ const HistoryDialog = () => {
                     <Search/>
                 </div>
                 <Separator/>
-                <div className="flex flex-col max-h-80 overflow-auto">
+                <ScrollArea className="flex flex-col max-h-80 overflow-auto">
                     <ConversationButton/>
                     <ConversationButton/>
                     <ConversationButton/>
@@ -46,7 +47,7 @@ const HistoryDialog = () => {
                     <ConversationButton/>
                     <ConversationButton/>
                     <ConversationButton/>
-                </div>
+                </ScrollArea>
                 <DialogFooter>
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                         <Badge variant={"outline"} className="text-muted-foreground">Esc</Badge>

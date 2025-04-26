@@ -3,7 +3,8 @@ import { Button } from "../ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
-import { ChevronDown, ScrollText, ShieldEllipsis } from "lucide-react"
+import { ChevronDown, ShieldEllipsis } from "lucide-react"
+import ProtectionScript from "./protection-script"
 
 
 const ModelSelector = () => {
@@ -48,21 +49,7 @@ const ModelSelector = () => {
                   </Button>
                 ))}
                 <Separator className="my-2"/>
-                <Button variant={"ghost"} className="w-full relative h-fit">
-                    <div className="w-full text-start flex items-center gap-3">
-                        <div className="w-full">
-                            <h4 className="scroll-m-20 font-semibold tracking-tight">
-                                Protection script
-                            </h4>
-                            <p
-                                className="text-sm text-muted-foreground whitespace-normal"
-                            >
-                                Write your protection command
-                            </p>
-                        </div>
-                        <ScrollText className="!size-5"/>
-                    </div>
-                </Button>
+                <ProtectionScript/>
             </PopoverContent>
             </Popover>
         </Tooltip>
