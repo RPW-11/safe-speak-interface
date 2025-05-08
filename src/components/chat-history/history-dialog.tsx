@@ -8,8 +8,13 @@ import { Separator } from "../ui/separator"
 import { Badge } from "../ui/badge"
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
 import { ScrollArea } from "../ui/scroll-area"
+import { Conversation } from "@/types/conversation"
 
-const HistoryDialog = () => {
+interface HistoryDialogProps {
+    conversations: Conversation[]
+}
+
+const HistoryDialog = ({ conversations }: HistoryDialogProps) => {
     const [isOpen, setIsOpen] = useState<boolean>(false)
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
@@ -36,17 +41,9 @@ const HistoryDialog = () => {
                 </div>
                 <Separator/>
                 <ScrollArea className="flex flex-col max-h-80 overflow-auto">
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
-                    <ConversationButton/>
+                    { conversations.toReversed().map((cnv) => (
+                        <ConversationButton key={cnv.id} conversation={cnv}/>
+                    ))}
                 </ScrollArea>
                 <DialogFooter>
                     <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">

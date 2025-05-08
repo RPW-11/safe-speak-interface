@@ -8,9 +8,9 @@ export default function RootLayout({
     children: React.ReactNode;
   }>) {
     return (
-      <ScrollArea className="h-full overflow-auto">
-        <Header/>
-        { children }
-      </ScrollArea>
+      <div className="flex flex-col h-screen">
+          <Header/>
+          {children}
+      </div>
     );
   }

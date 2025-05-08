@@ -1,14 +1,33 @@
 "use client"
 import { ShieldCheck } from 'lucide-react';
 import AvatarPopover from './avatar-popover';
-import { NotebookText } from 'lucide-react';
 import { PenLine } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import HistoryDialog from './chat-history/history-dialog';
+import { useEffect, useState } from 'react';
+import { Conversation } from '@/types/conversation';
+import { useConversation } from '@/hooks/useConversation';
+import { useConversationStore } from '@/stores/useConversationStore';
 
 
 const Header = () => {
+  const { isLoading, error, getConversationsHandler } = useConversation();
+  const { conversations, setConversations } = useConversationStore();
+
+  const handleGetConversations = async () => {
+    try {
+      const conversations = await getConversationsHandler();
+      setConversations(conversations);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    handleGetConversations();
+  }, [])
+
   return (
     <header className="h-16 top-0 z-50 absolute w-full bg-white shadow-lg shadow-white">
       <div className="px-6 py-3 flex items-center justify-between">
@@ -23,7 +42,7 @@ const Header = () => {
         <div className="flex items-center space-x-7">
           <div className="flex gap-3">
             <Button variant={"ghost"} size={"icon"}><PenLine className='!size-5'/></Button>
-            <HistoryDialog/>
+            {!isLoading && <HistoryDialog conversations={conversations}/>}
           </div>
           <AvatarPopover/>
         </div>

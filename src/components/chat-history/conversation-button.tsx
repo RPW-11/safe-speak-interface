@@ -3,25 +3,32 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/
 import Link from "next/link"
 import { Button } from "../ui/button"
 import { useState } from "react"
+import { Conversation } from "@/types/conversation"
 
-const ConversationButton = () => {
+interface ConversationButtonProps {
+    conversation: Conversation
+}
+
+const ConversationButton = ({ conversation }: ConversationButtonProps) => {
     const [isHover, setIsHover] = useState(false);
 
     return (
         <Link 
-            href={"/"} 
+            href={`/dashboard/${conversation.id}`} 
             className="rounded-md px-4 py-1 min-h-[52px] flex items-center hover:bg-gray-100"
             onMouseEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
         >
             <div className="flex items-center w-full justify-between gap-2">
-                <p>This is the title of the convo</p>
+                <p>{ conversation.title || "Unknown"}</p>
                 {isHover ? 
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <RenameButton/>
                     <DeleteButton/>
                 </div> : 
-                <p className="text-muted-foreground text-sm">3 days ago</p>
+                <p className="text-muted-foreground text-sm">
+                    {conversation.updated_at ? getRelativeTime(conversation.updated_at) : "Unknown"}
+                </p>
                 }
             </div>
         </Link>
@@ -85,5 +92,31 @@ const RenameButton = () => {
         </TooltipProvider>
     )
 }
+
+const getRelativeTime = (dateString: string) => {
+    const date = new Date(dateString.replace(' ', 'T') + 'Z');
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime())) / 1000;
+    
+    const intervals = {
+        year: 31536000,
+        month: 2592000,
+        week: 604800,
+        day: 86400,
+        hour: 3600,
+        minute: 60
+    };
+    
+    if (seconds < 60) return "just now";
+    
+    for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+        const interval = Math.floor(seconds / secondsInUnit);
+        if (interval >= 1) {
+            return interval === 1 ? `1 ${unit} ago` : `${interval} ${unit}s ago`;
+        }
+    }
+    
+    return "just now";
+};
 
 export default ConversationButton

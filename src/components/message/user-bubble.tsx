@@ -1,17 +1,20 @@
 import CopyButton from "./copy-button"
 import ModifyButton from "./modify-button"
 
-const UserBubble = () => {
-  const msg = "Message is here!"
+interface UserBubbleProps {
+  message: string
+}
+
+const UserBubble = ({ message }: UserBubbleProps) => {
   return (
-    <div className='py-2 flex flex-col items-end'>
+    <div className='py-2 flex flex-col items-end '>
       <div className="group w-fit max-w-[80%]">
         <div className='rounded-lg p-4 bg-accent'>
-          <p>{ msg }</p>
+          <p className="whitespace-pre-line leading-relaxed">{ message }</p>
         </div>
         <div className="flex h-8 items-center gap-2 py-2 justify-end">
           <ModifyButton/>
-          <CopyButton textToCopy={msg}/>
+          <CopyButton textToCopy={message}/>
         </div>
       </div>
     </div>
