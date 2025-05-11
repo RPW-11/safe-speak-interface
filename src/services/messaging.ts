@@ -1,9 +1,9 @@
 import apiClient from './index';
-import { MessageSend } from '@/types/message';
+import { Message, MessageSend } from '@/types/message';
 
 export const sendMessage = async (
     message_data: MessageSend,
-    onChunkReceived?: (chunk: string) => void
+    onChunkReceived?: (chunk: any) => void
 ): Promise<void> => {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/message/send`, {
         method: 'POST',
@@ -38,5 +38,7 @@ export const sendMessage = async (
       }
 }
 
-export const loadMessagesFromConversation = async (conversation_id: string) => {
+export const loadMessagesFromConversation = async (conversation_id: string): Promise<Message[]> => {
+  const response = await apiClient.get(`/message?conversation_id=${conversation_id}`)
+  return response.data
 }

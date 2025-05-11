@@ -1,21 +1,19 @@
 "use client"
-import { useRef, useEffect, useState, Dispatch, SetStateAction } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { SendHorizonal } from 'lucide-react';
 import AgentSelector from "./agent-selector";
 import RagToggle from "./rag-toggle";
 import ModelSelector from "./model-selector";
-import { useMessageStore } from '@/stores/useMessageStore';
-import { Message, MessageSend } from '@/types/message';
 
 interface PromptFormProps {
-  setUserMessage: (message: string | null) => void;
-  onSubmit: () => void;
+  disabled?: boolean
+  onSubmit: (prompt: string) => void;
 }
 
 
-const PromptForm = ({ onSubmit, setUserMessage }: PromptFormProps) => {
+const PromptForm = ({ onSubmit, disabled }: PromptFormProps) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [inputValue, setInputValue] = useState('');
   
@@ -29,13 +27,12 @@ const PromptForm = ({ onSubmit, setUserMessage }: PromptFormProps) => {
     }, [inputValue]);
 
     const handleSubmitMessage = async () => {
+      onSubmit(inputValue)
       setInputValue('');
-      onSubmit()
     }
 
     const handleInputChange = (e:React.ChangeEvent<HTMLTextAreaElement>) => {
       setInputValue(e.target.value);
-      setUserMessage(e.target.value);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -48,6 +45,7 @@ const PromptForm = ({ onSubmit, setUserMessage }: PromptFormProps) => {
     return (
       <div className="flex flex-col gap-2 w-full p-4 border bg-white rounded-lg">
         <Textarea
+          disabled={disabled}
           ref={textareaRef}
           placeholder="Chat to the bad guys"
           className="!text-base border-none shadow-none focus-visible:ring-0 resize-none min-h-[40px] overflow-y-hidden"
@@ -62,7 +60,7 @@ const PromptForm = ({ onSubmit, setUserMessage }: PromptFormProps) => {
           </div>
           <div className="flex gap-2">
             <ModelSelector />
-            <Button size="icon" className="rounded-lg" onClick={handleSubmitMessage}>
+            <Button disabled={disabled} size="icon" className="rounded-lg" onClick={handleSubmitMessage}>
               <SendHorizonal />
             </Button>
           </div>

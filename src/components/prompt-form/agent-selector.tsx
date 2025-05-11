@@ -1,16 +1,12 @@
-import { Agent } from "@/types/model"
 import { Button } from "../ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { ChevronDown, CircleUserRound } from "lucide-react"
+import { adversaryModels } from "@/constant"
 
 
 const AgentSelector = () => {
-    const dummyData: Agent[] = [
-        { id: "abc", name: "Lucas", description: "Very smart and very deceitful" },
-        { id: "bcd", name: "PX-4", description: "He will send you some harmful images" },
-        { id: "trf", name: "Alexandra", description: "She flirts with you like crazy" }
-    ]
+
     return (
         <TooltipProvider>
         <Tooltip delayDuration={300}>
@@ -30,7 +26,7 @@ const AgentSelector = () => {
                 <p>Select the agent</p>
             </TooltipContent>
             <PopoverContent align="start">
-                {dummyData.map(agent => (
+                {adversaryModels.map(agent => (
                     <Button key={agent.id} variant="ghost" className={`w-full relative h-fit ${agent.id === "abc" && 'bg-violet-100'}`}>
                         <div className="w-full text-start">
                             <h4 className="scroll-m-20 font-semibold tracking-tight">

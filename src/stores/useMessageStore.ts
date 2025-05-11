@@ -3,43 +3,33 @@ import { create } from "zustand";
 
 interface MessageStore {
   messages: Message[];
-  currentMessage: string | null;
-  setCurrentMessage: (message: string | null) => void;
+  pendingMessage: Message | null,
+  isSendingMessage: boolean,
+  setIsSendingMessage: (newState: boolean) => void,
+  setPendingMessage: (message: Message|null) => void,
   addMessage: (message: Message) => void;
+  setMessages: (messages: Message[]) => void;
   updateMessage: (id: string, updates: Partial<Message>) => void;
-  removeMessage: (id: string) => void;
-  getMessage: (id: string) => Message | undefined;
-  getMessagesByConversation: (conversationId: string) => Message[];
   clearMessages: () => void;
 }
 
 export const useMessageStore = create<MessageStore>((set, get) => ({
   messages: [],
-
-  currentMessage: null,
-  
+  pendingMessage: null,
+  isSendingMessage: false,
+  setIsSendingMessage: (newState) => set({ isSendingMessage: newState }),
+  setPendingMessage: (message) => set({ pendingMessage: message}),
   addMessage: (message) => 
     set((state) => ({ messages: [...state.messages, message] })),
-  
+  setMessages: (messages) => set({
+    messages: messages
+  }),
   updateMessage: (id, updates) =>
     set((state) => ({
       messages: state.messages.map((msg) =>
         msg.id === id ? { ...msg, ...updates } : msg
       ),
     })),
-  
-  removeMessage: (id) =>
-    set((state) => ({
-      messages: state.messages.filter((msg) => msg.id !== id),
-    })),
-  
-  getMessage: (id) => 
-    get().messages.find((msg) => msg.id === id),
-  
-  getMessagesByConversation: (conversationId) =>
-    get().messages.filter((msg) => msg.conversation_id === conversationId),
-  
   clearMessages: () => set({ messages: [] }),
-
-  setCurrentMessage: (message) => set((state) => ({ currentMessage: message })),
+  
 }));

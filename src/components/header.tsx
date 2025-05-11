@@ -9,11 +9,13 @@ import { useEffect, useState } from 'react';
 import { Conversation } from '@/types/conversation';
 import { useConversation } from '@/hooks/useConversation';
 import { useConversationStore } from '@/stores/useConversationStore';
+import { useRouter } from 'next/navigation';
 
 
 const Header = () => {
   const { isLoading, error, getConversationsHandler } = useConversation();
   const { conversations, setConversations } = useConversationStore();
+  const router = useRouter()
 
   const handleGetConversations = async () => {
     try {
@@ -41,8 +43,8 @@ const Header = () => {
         </div>
         <div className="flex items-center space-x-7">
           <div className="flex gap-3">
-            <Button variant={"ghost"} size={"icon"}><PenLine className='!size-5'/></Button>
-            {!isLoading && <HistoryDialog conversations={conversations}/>}
+            <Button variant={"ghost"} size={"icon"} onClick={() => router.push("/dashboard")}><PenLine className='!size-5'/></Button>
+            {<HistoryDialog conversations={conversations} isLoading={isLoading}/>}
           </div>
           <AvatarPopover/>
         </div>

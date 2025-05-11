@@ -6,7 +6,6 @@ import remarkBreaks from 'remark-breaks';
 import rehypeSanitize from 'rehype-sanitize';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { Copy } from 'lucide-react';
 
 interface MarkdownDisplayerProps {

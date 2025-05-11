@@ -1,30 +1,36 @@
 import { useState, useCallback } from 'react';
-import { sendMessage } from '@/services/messaging';
+import { sendMessage, loadMessagesFromConversation } from '@/services/messaging';
 import { MessageSend } from '@/types/message';
 
 
 export const useMessage = () => {
-    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const sendMessageHandler = useCallback(async (messageData: MessageSend, onChunkReceived: (chunk: string) => void) => {
-        setIsLoading(true);
+    const sendMessageHandler = useCallback(async (messageData: MessageSend, onChunkReceived: (chunk: any) => void) => {
         setError(null);
         try {
             await sendMessage(
                 messageData, 
-                (chunk: string) => {
+                (chunk) => {
                     onChunkReceived(chunk)
-                    setIsLoading(false);
                 }
             );
         } catch (err: any) {
             setError(err.response?.data?.detail || 'Message sending failed');
             throw err;
-        } finally {
-            setIsLoading(false);
         }
     }
     , []);
-    return { sendMessageHandler, isLoading, setIsLoading, error };
+
+    const loadMessagesHandler = useCallback(async (conversation_id: string) => {
+        setError(null)
+        try {
+            const messages = await loadMessagesFromConversation(conversation_id)
+            return messages
+        } catch (error: any) {
+            setError(error.response?.data?.detail || 'Message sending failed');
+            throw error;
+        }
+    }, [])
+    return { sendMessageHandler, loadMessagesHandler, error };
 }

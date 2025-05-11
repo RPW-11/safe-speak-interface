@@ -10,38 +10,75 @@ import { useMessageStore } from "@/stores/useMessageStore"
 import { useMessage } from "@/hooks/useMessage"
 import { useParams, useRouter } from "next/navigation"
 import { useConversation } from "@/hooks/useConversation"
+import { formatMessage } from "@/utils"
+import Loading from "@/components/loading"
+
 
 const DashboardPage = () => {
   const params = useParams()
   const router = useRouter()
   const { id } = params
   
-  const [userMessage, setUserMessage] = useState<string|null>()
-  const { messages, currentMessage, setCurrentMessage, addMessage } = useMessageStore()
-  const { isLoading, setIsLoading, error, sendMessageHandler } = useMessage()
+  const [aiMessage, setAiMessage] = useState<Message|null>()
+  const [aiResponse, setAiResponse] = useState<string>('')
+  const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false)
+  const [isStreaming, setIsStreaming] = useState<boolean>(false)
+
+  const {
+    messages,
+    pendingMessage,
+    isSendingMessage,
+    setPendingMessage,
+    setIsSendingMessage,
+    addMessage,
+    setMessages,
+    clearMessages,
+    updateMessage,
+  } = useMessageStore()
+
+  const {
+    error: sendMessageError,
+    sendMessageHandler 
+  } = useMessage()
+
+  const {
+    error: loadMessageError,
+    loadMessagesHandler 
+  } = useMessage()
+
   const { createConversationHandler } = useConversation()
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
-  
 
   useEffect(() => {
-    if (id && id.length > 1) {
+    if (!id) {
+      console.log("You?");
+      clearMessages()
+      return
+    } 
+
+    if (id.length > 1) {
       router.push('/dashboard')
       return
     }
-    const storedUserMessage = localStorage.getItem("user-message_" + id)
-    if (storedUserMessage) {
-      const parsedMessage = JSON.parse(storedUserMessage) as Message
-      localStorage.removeItem("user-message_" + id)
-      submitMessage(parsedMessage)
+
+    if (id && pendingMessage) {
+      submitMessage(pendingMessage as MessageSend)
+      setPendingMessage(null)
+      return
+    }
+
+    if (!isSendingMessage) {
+      clearMessages()
+      handleLoadMessages()
     }
     
   }, [id])
 
   useEffect(() => {
     scrollToBottom()
-  }, [messages, isLoading, currentMessage])
+  }, [messages, aiResponse])
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -53,73 +90,84 @@ const DashboardPage = () => {
 
   const submitMessage = async (message: MessageSend) => {
     try {
+      setIsStreaming(true)
       await sendMessageHandler(
         message, 
         (chunk) => {
-          useMessageStore.setState((state) => ({
-            currentMessage: (state.currentMessage || '') + chunk,
-          }));
+          const parsedChunk = JSON.parse(chunk)
+          if (parsedChunk.role && parsedChunk.role === "assistant") setAiMessage(parsedChunk)
+          else if (parsedChunk.role && parsedChunk.role === "user") updateMessage("", parsedChunk)
+          else if (parsedChunk.explanation) console.log(parsedChunk.explanation);
+          else {
+            setIsSendingMessage(false)
+            setAiResponse(prev => prev + parsedChunk.content)
+          }
         }
       );
     } catch (error) {
       console.error('Error sending message:', error);
+    } finally {
+      setIsStreaming(false)
     }
   }
 
-  const handleSubmitMessage = async () => {
-    if (!userMessage) return
-    let userMessageStored: Message
-    let aiMessageStored: Message
+  const handleSubmitMessage = async (prompt: string) => {
+    if (prompt === "") return
 
-    if (currentMessage) {
-      aiMessageStored = {
-        id: '',
-        conversation_id: id ? id[0] : '',
-        agent_id: 'gemini',
-        model: 'gemini',
-        type: 'text',
-        content: currentMessage,
-      }
-      addMessage(aiMessageStored)
+    if (aiMessage && aiResponse !== "") {
+      addMessage({...aiMessage, content: aiResponse})
+      setAiMessage(null)
+      setAiResponse('')
     }
+    
+    let userMessage = id ? formatMessage("user", prompt, "gemini", id[0]) : formatMessage("user", prompt, "gemini")
+    addMessage(userMessage)
 
-    userMessageStored = {
-      id: '',
-      conversation_id: id ? id[0] : '',
-      model: 'gemini',
-      type: 'text',
-      content: userMessage,
-    }
-    addMessage(userMessageStored)
-
-    setUserMessage(null)
-    setCurrentMessage('')
-    setIsLoading(true)
+    setIsSendingMessage(true)
 
     if (!id) {
       const conversation = await createConversationHandler()
-      userMessageStored.conversation_id = conversation.id
-      localStorage.setItem("user-message_" + conversation.id, JSON.stringify(userMessageStored))
+      userMessage.conversation_id = conversation.id
+      setPendingMessage(userMessage)
       router.replace(`/dashboard/${conversation.id}`)
     } else {
-      await submitMessage(userMessageStored as MessageSend)
+      submitMessage(userMessage as MessageSend)
     }
   }
 
+  const handleLoadMessages = async () => {
+    setIsLoadingMessages(true)
+    const messages = await loadMessagesHandler(id[0])
+    setMessages(messages)
+    setIsLoadingMessages(false)
+  }
+
+  
   return (
     <ScrollArea className="h-full overflow-auto" ref={scrollAreaRef}>
       <div className="px-6 flex flex-col w-full min-h-screen justify-between pt-20 items-center relative">
+        { isLoadingMessages ? 
+        <div className="w-full h-full max-w-6xl min-w-screen flex-1 flex justify-center items-center py-4">
+          <Loading dark={true}/>
+        </div> :
+        messages.length > 0 ? 
         <div className="w-full h-full max-w-6xl min-w-screen flex-1 py-4">
           {messages.map((message, idx) => (
-            message.agent_id ? 
+            message.role === "assistant" ? 
               <AdversaryBubble key={idx} message={message.content} /> :
               <UserBubble key={idx} message={message.content}/>
           ))}
-          {isLoading ? <AdversaryLoading /> : currentMessage && <AdversaryBubble message={currentMessage} enableAnimation={true}/>}
+          {isSendingMessage ? <AdversaryLoading /> : aiResponse !== "" && <AdversaryBubble message={aiResponse} enableAnimation={true}/>}
           <div ref={messagesEndRef} />
+        </div> :
+        <div className="w-full max-w-6xl flex-1 flex flex-col items-center justify-center text-primary bg-gradient-to-r from-violet-500 via-fuchsia-500 to-blue-500 text-transparent bg-clip-text">
+          <h3 className="scroll-m-20 text-3xl font-bold tracking-tight">
+            Welcome to SafeSpeak Demo, Rainata
+          </h3>
         </div>
+        }
         <div className="sticky bottom-0 w-full max-w-6xl !min-w-screen">
-          <PromptForm onSubmit={handleSubmitMessage} setUserMessage={setUserMessage}/>
+          <PromptForm disabled={isStreaming} onSubmit={handleSubmitMessage}/>
           <div className="w-full h-6 bg-white"></div>
         </div>
       </div>
