@@ -22,17 +22,17 @@ export const adversaryModels: Agent[] = [
 export const protectionModels = [
     {
         id: "gemini",
-        modelName: "Gemini 2.5 Flash",
+        name: "Gemini 2.5 Flash",
         description: "Fast performing model. Sensitive protection"
     },
     {
         id: "distilgpt2",
-        modelName: "DistilGPT2",
+        name: "DistilGPT2",
         description: "A custom fine-tuned model"
     },
     {
         id: "mistral7b",
-        modelName: "Mistral 7B",
+        name: "Mistral 7B",
         description: "Mistral 7B hosted on Ollama"
     }
 ]

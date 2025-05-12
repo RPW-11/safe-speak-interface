@@ -3,9 +3,3 @@ export type Agent = {
     name: string
     description: string
 }
-
-export type Llm = {
-    id: string
-    name: string
-    description: string
-}

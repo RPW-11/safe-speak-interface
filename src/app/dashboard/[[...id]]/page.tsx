@@ -12,6 +12,7 @@ import { useParams, useRouter } from "next/navigation"
 import { useConversation } from "@/hooks/useConversation"
 import { formatMessage } from "@/utils"
 import Loading from "@/components/loading"
+import { useChatEnvStore } from "@/stores/useChatEnvStore"
 
 
 const DashboardPage = () => {
@@ -23,6 +24,8 @@ const DashboardPage = () => {
   const [aiResponse, setAiResponse] = useState<string>('')
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false)
   const [isStreaming, setIsStreaming] = useState<boolean>(false)
+
+  const { adversaryAgent, protectionModel } = useChatEnvStore()
 
   const {
     messages,
@@ -53,7 +56,6 @@ const DashboardPage = () => {
 
   useEffect(() => {
     if (!id) {
-      console.log("You?");
       clearMessages()
       return
     } 
@@ -119,8 +121,9 @@ const DashboardPage = () => {
       setAiMessage(null)
       setAiResponse('')
     }
-    
-    let userMessage = id ? formatMessage("user", prompt, "gemini", id[0]) : formatMessage("user", prompt, "gemini")
+
+    let userMessage = id ? formatMessage("user", prompt, protectionModel.id, adversaryAgent.id, id[0]) : formatMessage("user", prompt, protectionModel.id, adversaryAgent.id)
+
     addMessage(userMessage)
 
     setIsSendingMessage(true)
