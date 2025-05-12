@@ -16,6 +16,15 @@ export type Message = {
     type: string;
     content: string;
     img_url?: string;
+    threat?: ThreatInfo | null
+}
+
+export type ThreatInfo = {
+    id: string;
+    message_id: string;
+    is_threat: boolean;
+    description: string;
+    user_description?: string
 }
 
 export type MessageStream = {

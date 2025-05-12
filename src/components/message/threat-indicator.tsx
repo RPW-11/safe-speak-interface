@@ -3,11 +3,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Button } from '../ui/button';
 import { ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useState } from 'react';
+import { ThreatInfo } from '@/types/message';
+
+interface ThreatIndicatorProps {
+    threat: ThreatInfo 
+}
 
 
-const ThreatIndicator = () => {
-    const [isThreat, setIsThreat] = useState<boolean>(true)
-    const desc = "Possible harmful message. The user is trying to fool you by asking this and that. You should not reply this message or blcok this contact immediately. You should never talk to this person again. Otherwise, it can get you killed. Be careful out there. You should never tell someone that you don't trust about your PII. Once again."
+const ThreatIndicator = ({ threat }: ThreatIndicatorProps) => {
+    const [localIsThreat, setLocalIsThreat] = useState<boolean>(threat.is_threat)
+    
     return (
         <TooltipProvider>
             <Tooltip delayDuration={300}>
@@ -18,27 +23,38 @@ const ThreatIndicator = () => {
                             variant={"ghost"} 
                             size={"icon"} 
                             className="w-fit h-fit p-1 text-muted-foreground">
-                            {isThreat ? <ShieldAlert className='!size-5 text-red-700'/> : <ShieldCheck className='!size-5 text-primary'/>}
+                            {localIsThreat ? <ShieldAlert className='!size-5 text-red-700'/> : <ShieldCheck className='!size-5 text-primary'/>}
                             </Button>
                         </PopoverTrigger>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>Malicious message detected!</p>
+                        {localIsThreat ? <p>Malicious message detected!</p> : <p>Safe message</p>}
                     </TooltipContent>
                     <PopoverContent className='space-y-3'>
+                        {localIsThreat ?
                         <div>
                             <h4 className="scroll-m-20 font-semibold tracking-tight">
                                 Malicious Message Detected!
                             </h4>
                             <div className="overflow-auto max-h-64 ">
-                                <p className="text-sm hyphens-auto">{ desc }</p>
+                                <p className="text-sm hyphens-auto">{ threat.description }</p>
                             </div>
                         </div>
-                        {!isThreat && <p className='text-xs text-muted-foreground italic'>You marked this message as safe</p>}
+                        :
+                        <div>
+                            <h4 className="scroll-m-20 font-semibold tracking-tight">
+                                Safe Message
+                            </h4>
+                            <div className="overflow-auto max-h-64 ">
+                                <p className="text-sm hyphens-auto">This is a safe message</p>
+                            </div>
+                        </div>
+                        }
+                        {!localIsThreat && threat.user_description && <p className='text-xs text-muted-foreground italic'>You marked this message as safe</p>}
                         <div className="mt-3">
-                            {isThreat ? 
-                            <Button size={"sm"} onClick={() => setIsThreat(false)}>Mark as safe</Button> : 
-                            <Button size={"sm"} onClick={() => setIsThreat(true)} variant={"destructive"}>Mark as threat</Button>
+                            {localIsThreat ? 
+                            <Button size={"sm"} onClick={() => setLocalIsThreat(false)}>Mark as safe</Button> : 
+                            <Button size={"sm"} onClick={() => setLocalIsThreat(true)} variant={"destructive"}>Mark as threat</Button>
                             }
                         </div>
                     </PopoverContent>

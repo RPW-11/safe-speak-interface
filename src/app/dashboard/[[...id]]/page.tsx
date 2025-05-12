@@ -4,7 +4,7 @@ import UserBubble from "@/components/message/user-bubble"
 import AdversaryBubble from "@/components/message/adversary-bubble"
 import AdversaryLoading from "@/components/message/adversary-loading"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Message, MessageSend } from "@/types/message"
+import { Message, MessageSend, ThreatInfo } from "@/types/message"
 import { useState, useEffect, useRef } from "react"
 import { useMessageStore } from "@/stores/useMessageStore"
 import { useMessage } from "@/hooks/useMessage"
@@ -22,6 +22,7 @@ const DashboardPage = () => {
   
   const [aiMessage, setAiMessage] = useState<Message|null>()
   const [aiResponse, setAiResponse] = useState<string>('')
+  const [currentAiThreat, setCurrentAiThreat] = useState<ThreatInfo|null>(null)
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false)
   const [isStreaming, setIsStreaming] = useState<boolean>(false)
 
@@ -97,12 +98,12 @@ const DashboardPage = () => {
         message, 
         (chunk) => {
           const parsedChunk = JSON.parse(chunk)
-          if (parsedChunk.role && parsedChunk.role === "assistant") setAiMessage(parsedChunk)
-          else if (parsedChunk.role && parsedChunk.role === "user") updateMessage("", parsedChunk)
-          else if (parsedChunk.explanation) console.log(parsedChunk.explanation);
+          if (parsedChunk.type === "ai-msg") setAiMessage(parsedChunk.data)
+          else if (parsedChunk.type === "user-msg") updateMessage("", parsedChunk.data)
+          else if (parsedChunk.type === "malicious-verdict") setCurrentAiThreat(parsedChunk.data as ThreatInfo)
           else {
             setIsSendingMessage(false)
-            setAiResponse(prev => prev + parsedChunk.content)
+            setAiResponse(prev => prev + parsedChunk.data)
           }
         }
       );
@@ -117,8 +118,9 @@ const DashboardPage = () => {
     if (prompt === "") return
 
     if (aiMessage && aiResponse !== "") {
-      addMessage({...aiMessage, content: aiResponse})
+      addMessage({...aiMessage, content: aiResponse, threat: currentAiThreat})
       setAiMessage(null)
+      setCurrentAiThreat(null)
       setAiResponse('')
     }
 
@@ -157,10 +159,11 @@ const DashboardPage = () => {
         <div className="w-full h-full max-w-6xl min-w-screen flex-1 py-4">
           {messages.map((message, idx) => (
             message.role === "assistant" ? 
-              <AdversaryBubble key={idx} message={message.content} /> :
+              <AdversaryBubble key={idx} message={message.content} threat={message.threat}/> :
               <UserBubble key={idx} message={message.content}/>
           ))}
-          {isSendingMessage ? <AdversaryLoading /> : aiResponse !== "" && <AdversaryBubble message={aiResponse} enableAnimation={true}/>}
+          {isSendingMessage ? <AdversaryLoading /> :
+          aiResponse !== "" && <AdversaryBubble message={aiResponse} enableAnimation={true} threat={currentAiThreat} isStreaming={isStreaming}/>}
           <div ref={messagesEndRef} />
         </div> :
         <div className="w-full max-w-6xl flex-1 flex flex-col items-center justify-center text-primary bg-gradient-to-r from-violet-500 via-fuchsia-500 to-blue-500 text-transparent bg-clip-text">

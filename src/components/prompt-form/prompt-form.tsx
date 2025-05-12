@@ -27,6 +27,7 @@ const PromptForm = ({ onSubmit, disabled }: PromptFormProps) => {
     }, [inputValue]);
 
     const handleSubmitMessage = async () => {
+      if (disabled) return
       onSubmit(inputValue)
       setInputValue('');
     }
@@ -45,7 +46,6 @@ const PromptForm = ({ onSubmit, disabled }: PromptFormProps) => {
     return (
       <div className="flex flex-col gap-2 w-full p-4 border bg-white rounded-lg">
         <Textarea
-          disabled={disabled}
           ref={textareaRef}
           placeholder="Chat to the bad guys"
           className="!text-base border-none shadow-none focus-visible:ring-0 resize-none min-h-[40px] overflow-y-hidden"
