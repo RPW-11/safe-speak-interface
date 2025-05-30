@@ -5,16 +5,17 @@ import { PenLine } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import HistoryDialog from './chat-history/history-dialog';
-import { useEffect, useState } from 'react';
-import { Conversation } from '@/types/conversation';
+import { useEffect } from 'react';
 import { useConversation } from '@/hooks/useConversation';
 import { useConversationStore } from '@/stores/useConversationStore';
 import { useRouter } from 'next/navigation';
+import { useUserStore } from '@/stores/useUserStore';
 
 
 const Header = () => {
-  const { isLoading, error, getConversationsHandler } = useConversation();
+  const { isLoading, error: loadConvoErr, getConversationsHandler } = useConversation();
   const { conversations, setConversations } = useConversationStore();
+  const { fetchUser, loading: userInfoLoading, error: userInfoErr, user } = useUserStore()
   const router = useRouter()
 
   const handleGetConversations = async () => {
@@ -28,6 +29,7 @@ const Header = () => {
 
   useEffect(() => {
     handleGetConversations();
+    fetchUser()
   }, [])
 
   return (
@@ -46,7 +48,7 @@ const Header = () => {
             <Button variant={"ghost"} size={"icon"} onClick={() => router.push("/dashboard")}><PenLine className='!size-5'/></Button>
             {<HistoryDialog conversations={conversations} isLoading={isLoading}/>}
           </div>
-          <AvatarPopover/>
+          <AvatarPopover loading={userInfoLoading} user={user}/>
         </div>
       </div>
     </header>

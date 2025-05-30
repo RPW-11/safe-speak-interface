@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { createConversation, getConversations } from '@/services/conversation';
+import { createConversation, getConversations, deleteConversation } from '@/services/conversation';
 
 
 export const useConversation = () => {
@@ -36,5 +36,18 @@ export const useConversation = () => {
     }
     , []);
 
-    return { createConversationHandler, getConversationsHandler, isLoading, error };
+    const deleteConversationHandler = useCallback(async (conversationId: string) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            await deleteConversation(conversationId)
+        } catch (err: any) {
+            setError(err.response?.data?.detail || 'Failed to delete conversation');
+            throw err;
+        } finally {
+            setIsLoading(false);
+        }
+    }, [])
+
+    return { createConversationHandler, getConversationsHandler, deleteConversationHandler, isLoading, error };
 }

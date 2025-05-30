@@ -19,6 +19,8 @@ export const sendMessage = async (
       }
     
       const reader = response.body?.getReader();
+      const delimiter = "\n\n"
+      let buffer = ''
       
       if (!reader) {
         throw new Error('No readable stream received');
@@ -29,11 +31,17 @@ export const sendMessage = async (
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        const parts = buffer.split(delimiter);
         
-        const chunk = decoder.decode(value);
+        buffer = parts.pop() || ''
         
-        if (onChunkReceived) {
-          onChunkReceived(chunk);
+        for (const chunk of parts) {
+          if (onChunkReceived) {
+            onChunkReceived(chunk.trim());
+          }
         }
       }
 }

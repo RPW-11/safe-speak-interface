@@ -1,9 +1,14 @@
+"use client"
 import { Pen, Trash } from "lucide-react"
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "../ui/tooltip"
 import Link from "next/link"
 import { Button } from "../ui/button"
 import { useState } from "react"
 import { Conversation } from "@/types/conversation"
+import { useConversation } from "@/hooks/useConversation"
+import { useConversationStore } from "@/stores/useConversationStore"
+import Loading from "../loading"
+import { useParams } from "next/navigation"
 
 interface ConversationButtonProps {
     conversation: Conversation
@@ -11,11 +16,13 @@ interface ConversationButtonProps {
 
 const ConversationButton = ({ conversation }: ConversationButtonProps) => {
     const [isHover, setIsHover] = useState(false);
+    const params = useParams()
+    const { id } = params
 
     return (
         <Link 
             href={`/dashboard/${conversation.id}`} 
-            className="rounded-md px-4 py-1 min-h-[52px] flex items-center hover:bg-gray-100"
+            className={`rounded-md px-4 py-1 min-h-[52px] flex items-center ${id && id[0] === conversation.id ? "bg-gray-100": "hover:bg-gray-100"}`}
             onMouseEnter={() => setIsHover(true)}
             onMouseLeave={() => setIsHover(false)}
         >
@@ -24,7 +31,7 @@ const ConversationButton = ({ conversation }: ConversationButtonProps) => {
                 {isHover ? 
                 <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                     <RenameButton/>
-                    <DeleteButton/>
+                    <DeleteButton conversationId={conversation.id}/>
                 </div> : 
                 <p className="text-muted-foreground text-sm">
                     {conversation.updated_at ? getRelativeTime(conversation.updated_at) : "Unknown"}
@@ -35,16 +42,24 @@ const ConversationButton = ({ conversation }: ConversationButtonProps) => {
     )
 }
 
-const DeleteButton = () => {
+const DeleteButton = ({ conversationId }: { conversationId: string }) => {
+    const { isLoading, error, deleteConversationHandler } = useConversation()
+    const { removeConversations } = useConversationStore()
+
     const handleMouseDown = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
     };
 
-    const handleClick = (e: React.MouseEvent) => {
+    const handleClick = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        // Your delete logic here
+        try {
+            await deleteConversationHandler(conversationId)
+            removeConversations(conversationId)
+        } catch (error) {
+            console.log(error);
+        }
     };
     return (
         <TooltipProvider>
@@ -54,7 +69,9 @@ const DeleteButton = () => {
                     onClick={handleClick} 
                     onMouseDown={handleMouseDown}
                     size={"icon"} variant={"ghost"} 
-                    className="hover:bg-gray-200"><Trash className="!size-3.5"/></Button>
+                    className="hover:bg-gray-200">
+                        {isLoading ? <Loading dark={true}/> : <Trash className="!size-3.5"/>}
+                    </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                     <p>Delete</p>

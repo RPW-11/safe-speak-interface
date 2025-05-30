@@ -3,7 +3,7 @@ import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import { Dialog, DialogTrigger, DialogContent, DialogFooter } from "../ui/dialog"
 import ConversationButton from "./conversation-button"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Separator } from "../ui/separator"
 import { Badge } from "../ui/badge"
 import { DialogDescription, DialogTitle } from "@radix-ui/react-dialog"
@@ -20,6 +20,9 @@ interface HistoryDialogProps {
 const HistoryDialog = ({ conversations, isLoading }: HistoryDialogProps) => {
     const router = useRouter()
     const [isOpen, setIsOpen] = useState<boolean>(false)
+    const [searchTerm, setSearchTerm] = useState<string>('')
+    const [localConversations, setLocalConversations] = useState<Conversation[]>([])
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
             setIsOpen(false)
@@ -28,6 +31,25 @@ const HistoryDialog = ({ conversations, isLoading }: HistoryDialogProps) => {
             router.push("/dashboard")
         }
     };
+
+    const handleSearchConversation = () => {
+        if (searchTerm === '') {
+            setLocalConversations(conversations)
+            return
+        }
+        setLocalConversations(conversations.filter(cnv => 
+            cnv.title.toLowerCase().includes(searchTerm.toLowerCase())
+        ))
+    }
+
+    useEffect(() => {
+        handleSearchConversation()
+    }, [searchTerm])
+
+    useEffect(() => {
+        setLocalConversations(conversations)
+    }, [conversations])
+
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
@@ -49,12 +71,13 @@ const HistoryDialog = ({ conversations, isLoading }: HistoryDialogProps) => {
                 <div className="flex items-center justify-between gap-4">
                     <Input type="text" 
                     className="!text-base h-7 shadow-none focus-visible:ring-0 border-none p-0" 
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search conversations..."/>
                     <Search/>
                 </div>
                 <Separator/>
                 <ScrollArea className="flex flex-col max-h-80 overflow-auto">
-                    { conversations.length > 0 ? conversations.toReversed().map((cnv) => (
+                    { localConversations.length > 0 ? localConversations.map((cnv) => (
                         <ConversationButton key={cnv.id} conversation={cnv}/>
                     )) : 
                     <h4 className="scroll-m-20 text-muted-foreground text-center py-7 font-semibold tracking-tight">

@@ -13,7 +13,9 @@ import { useConversation } from "@/hooks/useConversation"
 import { formatMessage } from "@/utils"
 import Loading from "@/components/loading"
 import { useChatEnvStore } from "@/stores/useChatEnvStore"
-
+import { useConversationStore } from "@/stores/useConversationStore"
+import { Conversation } from "@/types/conversation"
+import { useUserStore } from "@/stores/useUserStore"
 
 const DashboardPage = () => {
   const params = useParams()
@@ -25,6 +27,7 @@ const DashboardPage = () => {
   const [currentAiThreat, setCurrentAiThreat] = useState<ThreatInfo|null>(null)
   const [isLoadingMessages, setIsLoadingMessages] = useState<boolean>(false)
   const [isStreaming, setIsStreaming] = useState<boolean>(false)
+  const { user, loading: userInfoLoading } = useUserStore()
 
   const { adversaryAgent, protectionModel } = useChatEnvStore()
 
@@ -51,6 +54,7 @@ const DashboardPage = () => {
   } = useMessage()
 
   const { createConversationHandler } = useConversation()
+  const { updateConversations } = useConversationStore()
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
@@ -101,7 +105,8 @@ const DashboardPage = () => {
           if (parsedChunk.type === "ai-msg") setAiMessage(parsedChunk.data)
           else if (parsedChunk.type === "user-msg") updateMessage("", parsedChunk.data)
           else if (parsedChunk.type === "malicious-verdict") setCurrentAiThreat(parsedChunk.data as ThreatInfo)
-          else {
+          else if (parsedChunk.type === "new-conversation") updateConversations(parsedChunk.data as Conversation)
+          else {      
             setIsSendingMessage(false)
             setAiResponse(prev => prev + parsedChunk.data)
           }
@@ -118,7 +123,7 @@ const DashboardPage = () => {
     if (prompt === "") return
 
     if (aiMessage && aiResponse !== "") {
-      addMessage({...aiMessage, content: aiResponse, threat: currentAiThreat})
+      addMessage({...aiMessage, content: aiResponse, threat_indicator: currentAiThreat})
       setAiMessage(null)
       setCurrentAiThreat(null)
       setAiResponse('')
@@ -134,6 +139,8 @@ const DashboardPage = () => {
       const conversation = await createConversationHandler()
       userMessage.conversation_id = conversation.id
       setPendingMessage(userMessage)
+      localStorage.setItem(`conv-env-protectmodel-${conversation.id}`, JSON.stringify(protectionModel))
+      localStorage.setItem(`conv-env-adversarymodel-${conversation.id}`, JSON.stringify(adversaryAgent))
       router.replace(`/dashboard/${conversation.id}`)
     } else {
       submitMessage(userMessage as MessageSend)
@@ -142,16 +149,21 @@ const DashboardPage = () => {
 
   const handleLoadMessages = async () => {
     setIsLoadingMessages(true)
-    const messages = await loadMessagesHandler(id[0])
-    setMessages(messages)
-    setIsLoadingMessages(false)
+    try {
+      const messages = await loadMessagesHandler(id[0])
+      setMessages(messages)
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingMessages(false)
+    }
   }
 
   
   return (
     <ScrollArea className="h-full overflow-auto" ref={scrollAreaRef}>
       <div className="px-6 flex flex-col w-full min-h-screen justify-between pt-20 items-center relative">
-        { isLoadingMessages ? 
+        { isLoadingMessages || userInfoLoading ? 
         <div className="w-full h-full max-w-6xl min-w-screen flex-1 flex justify-center items-center py-4">
           <Loading dark={true}/>
         </div> :
@@ -159,17 +171,19 @@ const DashboardPage = () => {
         <div className="w-full h-full max-w-6xl min-w-screen flex-1 py-4">
           {messages.map((message, idx) => (
             message.role === "assistant" ? 
-              <AdversaryBubble key={idx} message={message.content} threat={message.threat}/> :
+              <AdversaryBubble key={idx} message={message} streamMessage={message.content} threat={message.threat_indicator}/> :
               <UserBubble key={idx} message={message.content}/>
           ))}
           {isSendingMessage ? <AdversaryLoading /> :
-          aiResponse !== "" && <AdversaryBubble message={aiResponse} enableAnimation={true} threat={currentAiThreat} isStreaming={isStreaming}/>}
+          aiResponse !== "" && <AdversaryBubble message={aiMessage} streamMessage={aiResponse} enableAnimation={true} threat={currentAiThreat} isStreaming={isStreaming}/>}
           <div ref={messagesEndRef} />
         </div> :
         <div className="w-full max-w-6xl flex-1 flex flex-col items-center justify-center text-primary bg-gradient-to-r from-violet-500 via-fuchsia-500 to-blue-500 text-transparent bg-clip-text">
-          <h3 className="scroll-m-20 text-3xl font-bold tracking-tight">
-            Welcome to SafeSpeak Demo, Rainata
-          </h3>
+          {user ? <h3 className="scroll-m-20 text-3xl font-bold tracking-tight">
+            {`Welcome to SafeSpeak Demo, ${user.username}`}
+          </h3> :
+          <Loading dark/>
+          }
         </div>
         }
         <div className="sticky bottom-0 w-full max-w-6xl !min-w-screen">

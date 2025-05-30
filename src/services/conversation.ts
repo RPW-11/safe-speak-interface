@@ -10,3 +10,7 @@ export const getConversations = async (): Promise<Conversation[]> => {
     const response = await apiClient.get('/conversation');
     return response.data;
 }
+
+export const deleteConversation = async (conversationId: string): Promise<void> => {
+  await apiClient.delete(`/conversation/${conversationId}`)
+}

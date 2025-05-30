@@ -137,7 +137,7 @@ const MarkdownDisplayer = ({ markdownText }: MarkdownDisplayerProps) => {
           ),
           img: ({ node, ...props }) => (
             <img
-              className="max-w-full h-auto rounded-lg my-4 border border-zinc-200 dark:border-zinc-700"
+              className="max-w-96 h-auto rounded-lg my-5 mx-auto border border-zinc-200 dark:border-zinc-700"
               {...props}
               loading="lazy"
             />

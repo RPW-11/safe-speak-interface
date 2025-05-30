@@ -4,7 +4,7 @@ import { create } from "zustand";
 interface ConversationStore {
   conversations: Conversation[];
   setConversations: (conversations: Conversation[]) => void;
-  updateConversations: (id: string, updates: Partial<Conversation>) => void;
+  updateConversations: (newConversation: Conversation) => void;
   removeConversations: (id: string) => void;
 }
 
@@ -14,12 +14,19 @@ export const useConversationStore = create<ConversationStore>((set, get) => ({
   setConversations: (conversations) => 
     set((state) => ({ conversations: conversations })),
   
-  updateConversations: (id, updates) =>
-    set((state) => ({
-      conversations: state.conversations.map((cnv) =>
-        cnv.id === id ? { ...cnv, ...updates } : cnv
-      ),
-    })),
+  updateConversations: (newConversation) => {
+    set((state) => {
+      const updatedConversations = [newConversation];
+      
+      for (const conv of state.conversations) {
+        if (conv.id !== newConversation.id) {
+          updatedConversations.push(conv);
+        } 
+      }
+      
+      return { conversations: updatedConversations };
+    });
+  },
   
   removeConversations: (id) =>
     set((state) => ({

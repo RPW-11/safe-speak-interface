@@ -1,5 +1,4 @@
 import CopyButton from "./copy-button"
-import ModifyButton from "./modify-button"
 
 interface UserBubbleProps {
   message: string
@@ -13,7 +12,6 @@ const UserBubble = ({ message }: UserBubbleProps) => {
           <p className="whitespace-pre-wrap leading-relaxed">{ message }</p>
         </div>
         <div className="flex h-8 items-center gap-2 py-2 justify-end">
-          <ModifyButton/>
           <CopyButton textToCopy={message}/>
         </div>
       </div>

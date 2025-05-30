@@ -1,10 +1,12 @@
 import { useState, useCallback } from 'react';
 import { sendMessage, loadMessagesFromConversation } from '@/services/messaging';
 import { MessageSend } from '@/types/message';
+import { useRouter } from 'next/navigation';
 
 
 export const useMessage = () => {
     const [error, setError] = useState<string | null>(null);
+    const { push } = useRouter()
 
     const sendMessageHandler = useCallback(async (messageData: MessageSend, onChunkReceived: (chunk: any) => void) => {
         setError(null);
@@ -28,7 +30,10 @@ export const useMessage = () => {
             const messages = await loadMessagesFromConversation(conversation_id)
             return messages
         } catch (error: any) {
-            setError(error.response?.data?.detail || 'Message sending failed');
+            if (error.response?.status === 404) {
+                push("/dashboard")
+            }
+            setError(error.response?.data?.detail || 'Message loading failed');
             throw error;
         }
     }, [])

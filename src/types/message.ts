@@ -13,10 +13,11 @@ export type Message = {
     role: string;
     agent_model: string;
     model: string;
+    rag_enabled?: boolean
     type: string;
     content: string;
     img_url?: string;
-    threat?: ThreatInfo | null
+    threat_indicator?: ThreatInfo | null
 }
 
 export type ThreatInfo = {
